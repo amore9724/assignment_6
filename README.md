@@ -19,12 +19,5 @@ Check for memory leaks using this command in shell1(may first need to run chmod 
 
 `valgrind --leak-check=full --log-file=valgrind.out --track-children=yes --show-leak-kinds=all ./countnames test/names.txt test/names1.txt test/names2.txt test/names_long.txt test/names_long_redundant.txt test/names_long_redundant1.txt test/names_long_redundant2.txt test/names_long_redundant3.txt test/namesB.txt test/custom_testcase_1.txt test/custom_testcase_2.txt test/custom_testcase_3.txt`
 # Lessons Learned:
-How to implement a hash table in C
-
-What stack smashing is(one of the error messages mentioned it)
-
-How to properly use valgrind
 
 # Acknowledgments
-https://stackoverflow.com/questions/1345670/stack-smashing-detected
-https://stackoverflow.com/questions/25906679/valgrind-permission-denied-on-file
