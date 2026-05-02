@@ -1,8 +1,14 @@
 #include "countnames.h"
+#include <pthread.h>
+
+pthread_mutex_t tlock3 = PTHREAD_MUTEX_INITIALIZER;
+
+pthread_mutex_t init_lock = PTHREAD_MUTEX_INITIALIZER;
 
 static NameCountData **hashtab = NULL; /* pointer table */
 static int hashsize = 0;
 static int entry_count = 0;
+
 
 void table_init() {                     // Initialize table.
     hashsize = 10;
@@ -18,7 +24,7 @@ void table_init() {                     // Initialize table.
 unsigned hash(const char *name) {                                 // Hashes entry in table.
     unsigned hashval = 0;
     for (int i = 0; name[i] != '\0'; i++)
-        hashval += name[i];
+        hashval += name[i];;
     return hashval % hashsize;
 }
 
@@ -27,17 +33,19 @@ NameCountData *lookup(const char *name) {
     if (hashtab == NULL)  // Every time this if statement is used it checks if the hashtable has been allocated or not.
         return NULL;
     for (NameCountData *np = hashtab[hash(name)]; np != NULL; np = np->next)
-        if (strcmp(name, np->name) == 0)
+        if (strcmp(name, np->name) == 0) {
             return np; /* found */
+        }
     return NULL; /* not found */
 }
 
 
-static void rehash() {                                  // Rehashes array
+static void rehash() {                                  // Rehashes array(May be a critical section)
     int new_size = hashsize * 2;
     // Reallocates hash table size to new size
     NameCountData **new_table = realloc(hashtab, new_size * sizeof(NameCountData *));
     if (new_table == NULL) {
+        pthread_mutex_unlock(&tlock3);
         perror("realloc");
         exit(1);
     }
@@ -65,14 +73,20 @@ static void rehash() {                                  // Rehashes array
 }
 
 NameCountData *insert(const NameCountMsg *ncm) {
-    if (hashtab == NULL)
+    pthread_mutex_lock(&init_lock);
+    if (hashtab == NULL) {
         table_init();
+    }
+    pthread_mutex_unlock(&init_lock);
+    pthread_mutex_lock(&tlock3);
     NameCountData *ncd;
-    if ((ncd = lookup(ncm->name)) == NULL) {     // No entry found.
+    if ((ncd = lookup(ncm->name)) == NULL) {
+
         ncd = malloc(sizeof(NameCountData));   // Create new entry.
-        if (ncd == NULL) return NULL;        // NULL tester
+        if (ncd == NULL) {pthread_mutex_unlock(&tlock3); return NULL; }        // NULL tester
         ncd->name = strdup(ncm->name);       // Copy name to np->name structure
         if (ncd->name == NULL) {             // Check if name exists. If not then return NULL.
+            pthread_mutex_unlock(&tlock3);
             free(ncd);
             return NULL;
         }
@@ -83,15 +97,20 @@ NameCountData *insert(const NameCountMsg *ncm) {
         ncd->next = hashtab[hashval];        // Set next entry to current entry at hashtable
         hashtab[hashval] = ncd;              // Set current entry at hashtable to np.
         entry_count++;
+
     } else {
         ncd->count += ncm->count;            // Increment counter for name.
     }
+    pthread_mutex_unlock(&tlock3);
     return ncd;                              // Return NameCountData structure
 }
 
 void table_print() {                                        // Print contents of whole table.
-    if (hashtab == NULL)
+    pthread_mutex_lock(&tlock3);
+    if (hashtab == NULL) {
+        pthread_mutex_unlock(&tlock3);
         return;
+    }
     for (int i = 0; i < hashsize; i++) {
         NameCountData *np = hashtab[i];                       // Get current element in table.
         while (np != NULL) {
@@ -99,10 +118,14 @@ void table_print() {                                        // Print contents of
             np = np->next;                                    // Go to next element in table.
         }
     }
+    pthread_mutex_unlock(&tlock3);
 }
 void table_destroy() {                          // Destroy table and initialize everything
-    if (hashtab == NULL)
+    pthread_mutex_lock(&tlock3);
+    if (hashtab == NULL) {
+        pthread_mutex_unlock(&tlock3);
         return;
+    }
     for (int i = 0; i < hashsize; i++) {
         NameCountData *np = hashtab[i];
         while (np != NULL) {
@@ -116,4 +139,5 @@ void table_destroy() {                          // Destroy table and initialize 
     hashtab = NULL;
     hashsize = 0;
     entry_count = 0;
+    pthread_mutex_unlock(&tlock3);
 }

@@ -8,6 +8,9 @@
  *   This repository can be made available upon request.
  */
 
+void* thread_runner(void*);
+pthread_t tid1, tid2;
+
 int main(int argc, char *argv[]) /* int argc = argument count
                                   * char *argv[] = string array containing the actual arguments passed.*/
 
