@@ -74,8 +74,6 @@ int main(int argc, char *argv[]) /* int argc = argument count
     GLOBAL = calloc((argc-1)*MNAME, sizeof(NameCountMsg));
     pthread_t threads[argc - 1]; // Initialize thread count.
     thread_args *targ = calloc(argc-1, sizeof(thread_args));
-    int saved_stdout = dup(STDOUT_FILENO);
-    int saved_stderr = dup(STDERR_FILENO);
     for (int i = 1; i < argc; i++) {
         targ[i-1].filename = strdup(argv[i]);
         targ[i-1].slot = i-1;
@@ -85,10 +83,6 @@ int main(int argc, char *argv[]) /* int argc = argument count
          * fourth argument is the arguments for the function */
     }
     for (int i = 0; i < argc-1; i++) {pthread_join(threads[i], NULL);}
-
-    dup2(saved_stdout, STDOUT_FILENO);
-    dup2(saved_stderr, STDERR_FILENO);
-
     table_print();
     table_destroy();
     free(GLOBAL);
