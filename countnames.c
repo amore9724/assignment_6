@@ -38,8 +38,8 @@ void *thread_task(void *arg) {
     ncount(names, nused, count);
     for (i = 0; nused[i] != 0; i++) {
         NameCountMsg msg;
-        snprintf(msg.name, MLINE, "%s", nused[i]); // Put name to slot in space.
-        msg.count = count[i]; // Put count to slot in space.
+        snprintf(msg.name, MLINE, "%s", nused[i]);
+        msg.count = count[i];
         insert(&msg);
     }
     clnup(names, nused); // This will free the allocated memory.
@@ -48,8 +48,24 @@ void *thread_task(void *arg) {
 
 int main(int argc, char *argv[]) /* int argc = argument count
                                   * char *argv[] = string array containing the actual arguments passed.*/
-
 {
+    char filename[256];
+    sprintf(filename, "%s/%d.out", output_path, getpid());
+
+    /* Create a PID.out for this child process
+    and then set stdout to this PID.out */
+
+    if (freopen(filename, "w", stdout) == NULL) {
+        perror("freopen failed");
+        return 1;
+    }
+    char fileerr[256];
+    sprintf(fileerr, "%s/%d.err", output_path, getpid());
+
+    if (freopen(fileerr, "w", stderr) == NULL) {
+        perror("freopen failed");
+        return 1;
+    }
     if (argc == 1) // If no file was provided
     {
         puts("No file provided, exiting."); // This informs the user that there is no file.
@@ -58,6 +74,8 @@ int main(int argc, char *argv[]) /* int argc = argument count
     GLOBAL = calloc((argc-1)*MNAME, sizeof(NameCountMsg));
     pthread_t threads[argc - 1]; // Initialize thread count.
     thread_args *targ = calloc(argc-1, sizeof(thread_args));
+    int saved_stdout = dup(STDOUT_FILENO);
+    int saved_stderr = dup(STDERR_FILENO);
     for (int i = 1; i < argc; i++) {
         targ[i-1].filename = strdup(argv[i]);
         targ[i-1].slot = i-1;
@@ -67,6 +85,9 @@ int main(int argc, char *argv[]) /* int argc = argument count
          * fourth argument is the arguments for the function */
     }
     for (int i = 0; i < argc-1; i++) {pthread_join(threads[i], NULL);}
+
+    dup2(saved_stdout, STDOUT_FILENO);
+    dup2(saved_stderr, STDERR_FILENO);
 
     table_print();
     table_destroy();

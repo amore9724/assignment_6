@@ -23,3 +23,4 @@ Learned how to create threads in UNIX which execute a function routine given arg
 
 # Acknowledgments
 https://stackoverflow.com/questions/5999418/why-is-strtok-considered-unsafe
+https://stackoverflow.com/questions/11042218/c-restore-stdout-to-terminal
