@@ -1,9 +1,9 @@
 #include "countnames.h"
 #include <pthread.h>
 
-static pthread_mutex_t tlock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t tlock = PTHREAD_MUTEX_INITIALIZER;   // Lock for writing to hash table.
 
-static pthread_mutex_t init_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t init_lock = PTHREAD_MUTEX_INITIALIZER;   // Lock for initializing hash table.
 
 static NameCountData **hashtab = NULL; /* pointer table */
 static int hashsize = 0;
@@ -74,7 +74,7 @@ static void rehash() {
     }
 }
 
-NameCountData *insert(const NameCountMsg *ncm) {
+NameCountData *insert(const NameCountMsg *ncm) {        // Insert entry into table.
     pthread_mutex_lock(&init_lock);
     if (hashtab == NULL) {
         table_init();

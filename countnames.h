@@ -18,7 +18,7 @@
 typedef struct thread_args {
     char *filename;
     int slot;
-} thread_args;
+} thread_args;  // Arguments for the thread.
 
 typedef struct {
     char name[MLINE];

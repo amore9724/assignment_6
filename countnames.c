@@ -10,9 +10,9 @@
 
 void *GLOBAL = NULL;
 
-void *thread_task(void *arg) {
-    thread_args *targ = (thread_args*) arg;
-    FILE *f = fopen(targ->filename, "r");
+void *thread_task(void *arg) {      // This is basically a version of countnames which executes within a thread.
+    thread_args *targ = (thread_args*) arg;    // Arguments passed to the function through a structure.
+    FILE *f = fopen(targ->filename, "r");   // Open file for counting names.
     if (f == NULL) {
         fputs("error: cannot open file\n\0", stderr); // This prints to stderr an error and exits the program.
         return NULL;
@@ -78,12 +78,14 @@ int main(int argc, char *argv[]) /* int argc = argument count
         targ[i-1].filename = strdup(argv[i]);
         targ[i-1].slot = i-1;
         pthread_create(&threads[i-1], NULL, thread_task, &targ[i-1]); // Create threads to do task.
-        /* First argument is thread in question,
+        /* First argument is the thread in question,
          * third argument is the function to be executed,
          * fourth argument is the arguments for the function */
     }
-    for (int i = 0; i < argc-1; i++) {pthread_join(threads[i], NULL);}
-    table_print();
+    for (int i = 0; i < argc-1; i++) {pthread_join(threads[i], NULL);}  // Wait for all threads to join
+    table_print();  // Print contents of table
+
+    /* This section of the program frees all memory. */
     table_destroy();
     free(GLOBAL);
     for (int i = 0; i < argc-1; i++)

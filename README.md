@@ -16,9 +16,20 @@ Copy and paste this to the terminal to test every text file in test.
 Check for memory leaks using this command in shell1(may first need to run chmod a+x test/*.txt):
 
 `valgrind --leak-check=full --log-file=valgrind.out --track-children=yes --show-leak-kinds=all ./countnames test/names.txt test/names1.txt test/names2.txt test/names_long.txt test/names_long_redundant.txt test/names_long_redundant1.txt test/names_long_redundant2.txt test/names_long_redundant3.txt test/namesB.txt test/custom_testcase_1.txt test/custom_testcase_2.txt test/custom_testcase_3.txt`
+
+Output is in output folder, first do
+
+`ls output`
+
+to get the filename, then do
+
+`cat <PID>.out`
+
+to get the output.
 # Lessons Learned:
 
 Learned how to make a data structure thread-safe by utilizing and implementing locks.
+
 Learned how to create threads in UNIX which execute a function routine given arguments(in struct) and a thread array.
 
 # Acknowledgments
