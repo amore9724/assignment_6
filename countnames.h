@@ -15,6 +15,11 @@
 #define output_path "output"    // Name of output directory.
 #define SHARED_MEMORY_NAME "/shared_memory_i"   // Name of shared memory area. It is a macro for portability.
 
+typedef struct thread_args {
+    char *filename;
+    int slot;
+} thread_args;
+
 typedef struct {
     char name[MLINE];
     int count;
