@@ -68,8 +68,22 @@ int main(int argc, char *argv[]) /* int argc = argument count
     }
     if (argc == 1) // If no file was provided
     {
-        puts("No file provided, exiting."); // This informs the user that there is no file.
-        return 0;
+        char buf[MAXLINE];
+        while (fgets(buf, MAXLINE, stdin) != NULL) {
+
+            if (buf[strlen(buf) - 1] == '\n')
+                buf[strlen(buf) - 1] = 0; /* replace newline with null */
+
+            char *token = strtok(buf, " ");
+
+            while (token != NULL) {
+                argv[argc++] = token;
+                token = strtok(NULL, " ");
+            }
+
+            argv[argc] = NULL;
+            break;
+        }
     }
     GLOBAL = calloc((argc-1)*MNAME, sizeof(NameCountMsg));
     pthread_t threads[argc - 1]; // Initialize thread count.
