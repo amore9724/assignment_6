@@ -51,21 +51,24 @@ int main(int argc, char *argv[]) /* int argc = argument count
 {
     char filename[256];
     sprintf(filename, "%s/%d.out", output_path, getpid());
-
+    int fd_output = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     /* Create a PID.out for this child process
     and then set stdout to this PID.out */
-
-    if (freopen(filename, "w", stdout) == NULL) {
-        perror("freopen failed");
+    dup2(fd_output, STDOUT_FILENO);
+    if (fd_output == -1) {
+        perror("Failed to reassign output stream.");
         return 1;
     }
+
     char fileerr[256];
     sprintf(fileerr, "%s/%d.err", output_path, getpid());
 
-    if (freopen(fileerr, "w", stderr) == NULL) {
-        perror("freopen failed");
+    int fd_err = open(fileerr, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd_err == -1) {
+        perror("Failed to reassign error stream.");
         return 1;
     }
+    dup2(fd_err, STDERR_FILENO);
     if (argc == 1) // If no file was provided
     {
         char buf[MAXLINE];
@@ -82,6 +85,9 @@ int main(int argc, char *argv[]) /* int argc = argument count
             }
 
             argv[argc] = NULL;
+            if (argc == 1) {
+                continue;
+            }
             break;
         }
     }
